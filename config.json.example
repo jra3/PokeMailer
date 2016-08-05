@@ -1,0 +1,17 @@
+{
+    "timezone": "US/Eastern",
+    "local_hostname": "Pokemon",
+
+    "smtp_host": "smtp.gmail.com",
+    "smtp_port": 587,
+    "smtp_auth_user": "ashketchum@gmail.com",
+    "smtp_auth_pass": "ichooseyou",
+    
+    "headers": {
+        "From": "Prof. Oak <p.oak@porcnick.com>",
+        "To": ["Ash Ketchum <ashketchum@gmail.com>",
+	       "Phone <2125551234@vtext.com>"]
+    },
+
+    "gmaps_api_key": "AIzaSyCAUJ4w3OLW3XOduO9I5UipqlCPTaW3OrI"
+}
