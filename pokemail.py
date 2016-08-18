@@ -12,6 +12,7 @@ import smtplib
 from datetime import datetime
 from pytz import timezone
 
+import argparse
 import time
 import json
 
@@ -96,13 +97,18 @@ def email_with_alternatives(headers, text=None, html=None):
     smtp.sendmail(from_addr, to_addrs, msg_root.as_string())
     smtp.close()
 
-def want(pid):
+def want(pid, recursive=False):
     if pid in WANTED:
         return True
-    else:
+    elif recursive:
         return any(want(x) for x in POKEDEX[pid]["evolves_to"])
+    else:
+        return False
 
 class MonHandler(tornado.web.RequestHandler):
+
+    def initialize(self, recursive):
+        self.recursive = recursive
 
     def post(self):
         content = tornado.escape.json_decode(self.request.body)
@@ -114,7 +120,7 @@ class MonHandler(tornado.web.RequestHandler):
 
         print "{name},{latitude},{longitude},{disappear_time}".format(name=species_name, **content['message'])
 
-        if not want(int(species)):
+        if not want(int(species), self.recursive):
             return
 
         encounter = content['message']["encounter_id"]
@@ -127,7 +133,7 @@ class MonHandler(tornado.web.RequestHandler):
         headers['Subject'] = species_name
 
         despawn = datetime.fromtimestamp(int(content['message']['disappear_time']))
-        despawn = utc.localize(despawn).astimezone(mytz)
+        # despawn = utc.localize(despawn).astimezone(mytz)
         despawn = despawn.strftime('%I:%M:%S')
 
         text = "{0}\n\nhttp://maps.google.com/maps?q={2},{3} \n\n {1}".format(
@@ -140,12 +146,22 @@ class MonHandler(tornado.web.RequestHandler):
         self.write(species_name)
 
 
-def make_app():
+def make_app(recursive):
     return tornado.web.Application([
-        (r"/pokemon", MonHandler),
+        (r"/pokemon", MonHandler, dict(recursive=recursive)),
     ], autoreload=True)
 
+parser = argparse.ArgumentParser(description="Pokemon notifications for PokemonGo-Map")
+
+parser.add_argument('--recursive',
+                    dest='recursive',
+                    action='store_true',
+                    help="if set, also alert on pokemon that evolve into the wanted pokemon",
+                    default=False)
+
 if __name__ == "__main__":
-    app = make_app()
+    args = parser.parse_args()
+    app = make_app(args.recursive)
     app.listen(5000)
+    print "started..."
     tornado.ioloop.IOLoop.current().start()
