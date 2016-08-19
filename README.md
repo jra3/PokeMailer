@@ -1,6 +1,6 @@
 # Pokemon Email Alerts
 
-A webhook powered notifier for use with [https://github.com/PokemonGoMap/PokemonGo-Map.git]
+A webhook powered notifier for use with [PokemonGo-Map](https://github.com/PokemonGoMap/PokemonGo-Map.git)
 
 
 ## Setup
